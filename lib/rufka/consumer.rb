@@ -1,16 +1,16 @@
-require "redis"
 require 'SecureRandom'
 
 module Rufka
   class Consumer
     DEFAULTS = {
       host: "localhost",
-      port: 6380
+      port: 6380,
+      reconnect_attempts: 0,
     }
 
     REQUIRED = [:group, :topic]
 
-    # Provides access to the underlying Redis client
+    # The underlying Redis client object
     attr_reader :redis
 
     # Create a new client instance.
@@ -21,18 +21,17 @@ module Rufka
     # @option opts [String] :topic Kafka topic to consume (required)
     # @option opts [String] :group Kafka consumer group name (required)
     # @option opts [String] :id (random) Kafka consumer id
+    # @option opts [Hash] :redis_opts ({}) Optional configuration for the
+    #   underlying Redis client
     def initialize(opts = {})
+      opts[:redis_opts] = {} if !opts[:redis_opts]
       opts = parse_opts(opts)
       client_id = "#{opts[:group]}:#{opts[:id]}"
-
-      @redis = Redis.new(
-        host: opts[:host], port: opts[:port], id: client_id, reconnect_attempts: 0
-      )
-
+      @redis = Redis.new(host: opts[:host], port: opts[:port], id: client_id)
       @topic = "topics:#{opts[:topic]}"
     end
 
-    # Consumes the last message.
+    # Consume a message.
     #
     # @param timeout [Fixnum] The time in seconds to wait for a message
     #   (default: 5)
@@ -40,14 +39,13 @@ module Rufka
     # @return [nil, String] The message, if any
     #
     # @example
-    #   pop(5) { |msg| puts "I received #{msg}" }
-    def pop(timeout=5)
+    #   consume(5) { |msg| puts "I received #{msg}" }
+    def consume(timeout=5)
       res = @redis.blpop(@topic, timeout: timeout)
 
-      if res
-        topic, partition, offset = res[1], res[3], res[5]
-        res = res.last
-      end
+      return if !res
+
+      topic, partition, offset, res = res[1], res[3], res[5], res[-1]
 
       begin
         raised = false
@@ -58,7 +56,7 @@ module Rufka
       end
 
       res
-    ensure # TODO: do we need this?
+    ensure
       if res && !raised
         @redis.rpush("acks", "#{topic}:#{partition}:#{offset}")
       end
@@ -67,8 +65,7 @@ module Rufka
     private
 
     def parse_opts(opts)
-      options = DEFAULTS.dup.merge(opts)
-      options[:port] = Integer(options[:port])
+      options = DEFAULTS.dup.merge(opts).merge(opts[:redis_opts])
       options[:id] = SecureRandom.hex if !options[:id]
 
       REQUIRED.each do |opt|
@@ -79,4 +76,3 @@ module Rufka
     end
   end
 end
-
