@@ -1,4 +1,4 @@
-require 'SecureRandom'
+require 'securerandom'
 
 module Rufka
   class Consumer
