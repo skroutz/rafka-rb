@@ -1,5 +1,7 @@
 require "redis"
 require "rufka/consumer"
+require "rufka/errors"
+require "rufka/message"
 require "rufka/producer"
 require "rufka/version"
 

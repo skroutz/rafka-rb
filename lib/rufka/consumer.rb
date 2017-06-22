@@ -25,34 +25,35 @@ module Rufka
       @topic = "topics:#{opts[:topic]}"
     end
 
-    # Consume a message.
+    # Fetch the next message.
     #
-    # @param timeout [Fixnum] The time in seconds to wait for a message
-    #   (default: 5)
+    # @param timeout [Fixnum] the time in seconds to wait for a message
     #
-    # @return [nil, String] The message, if any
+    # @raise [MalformedMessage] if the message from Rafka cannot be parsed
+    #
+    # @return [nil, Message] the message, if any
     #
     # @example
-    #   consume(5) { |msg| puts "I received #{msg}" }
+    #   consume(5) { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
-      res = @redis.blpop(@topic, timeout: timeout)
+      msg = @redis.blpop(@topic, timeout: timeout)
 
-      return if !res
+      return if !msg
 
-      topic, partition, offset, res = res[1], res[3], res[5], res[-1]
+      msg = Message.new(msg)
 
       begin
         raised = false
-        yield(res) if block_given?
+        yield(msg) if block_given?
       rescue => e
         raised = true
         raise e
       end
 
-      res
+      msg
     ensure
-      if res && !raised
-        @redis.rpush("acks", "#{topic}:#{partition}:#{offset}")
+      if msg && !raised
+        @redis.rpush("acks", "#{msg.topic}:#{msg.partition}:#{msg.offset}")
       end
     end
 
@@ -63,7 +64,7 @@ module Rufka
       options[:id] = SecureRandom.hex if !options[:id]
 
       REQUIRED.each do |opt|
-        raise "#{opt} not provided" if !options[opt]
+        raise "#{opt.inspect} option not provided" if !options[opt]
       end
 
       options
