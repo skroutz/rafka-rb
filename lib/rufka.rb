@@ -1,9 +1,12 @@
 require "redis"
-require "rufka/consumer"
+
 require "rufka/errors"
+require "rufka/generic_commands"
 require "rufka/message"
-require "rufka/producer"
 require "rufka/version"
+
+require "rufka/consumer"
+require "rufka/producer"
 
 module Rufka
   DEFAULTS = {

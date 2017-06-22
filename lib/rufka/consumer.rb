@@ -2,6 +2,8 @@ require 'securerandom'
 
 module Rufka
   class Consumer
+    include GenericCommands
+
     REQUIRED = [:group, :topic]
 
     # The underlying Redis client object
