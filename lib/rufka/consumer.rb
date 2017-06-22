@@ -2,12 +2,6 @@ require 'securerandom'
 
 module Rufka
   class Consumer
-    DEFAULTS = {
-      host: "localhost",
-      port: 6380,
-      reconnect_attempts: 0,
-    }
-
     REQUIRED = [:group, :topic]
 
     # The underlying Redis client object
@@ -23,7 +17,7 @@ module Rufka
     # @option opts [String] :id (random) Kafka consumer id
     # @option opts [Hash] :redis_opts ({}) Optional configuration for the
     #   underlying Redis client
-    def initialize(opts = {})
+    def initialize(opts={})
       opts[:redis_opts] = {} if !opts[:redis_opts]
       opts = parse_opts(opts)
       client_id = "#{opts[:group]}:#{opts[:id]}"

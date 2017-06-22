@@ -1,11 +1,5 @@
 module Rufka
   class Producer
-    DEFAULTS = {
-      host: "localhost",
-      port: 6380,
-      reconnect_attempts: 0,
-    }
-
     # Access the underlying Redis client object
     attr_reader :redis
 
