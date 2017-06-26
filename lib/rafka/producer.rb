@@ -1,4 +1,4 @@
-module Rufka
+module Rafka
   class Producer
     # Access the underlying Redis client object
     attr_reader :redis

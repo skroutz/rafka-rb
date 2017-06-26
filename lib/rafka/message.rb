@@ -1,4 +1,4 @@
-module Rufka
+module Rafka
   # Message represents a message consumed from a topic.
   class Message
     attr :topic, :partition, :offset, :value

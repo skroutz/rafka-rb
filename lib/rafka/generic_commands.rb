@@ -1,4 +1,4 @@
-module Rufka
+module Rafka
   # Commands available on both {Producer} and {Consumer}.
   module GenericCommands
     # @see https://redis.io/commands/ping

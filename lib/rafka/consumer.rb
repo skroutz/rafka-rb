@@ -1,6 +1,6 @@
 require 'securerandom'
 
-module Rufka
+module Rafka
   class Consumer
     include GenericCommands
 

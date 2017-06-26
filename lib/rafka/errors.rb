@@ -1,4 +1,4 @@
-module Rufka
+module Rafka
   class Error < StandardError
   end
 
