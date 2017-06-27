@@ -18,15 +18,17 @@ module Rafka
       @redis = Redis.new(host: opts[:host], port: opts[:port])
     end
 
-    # Produce a message. This is a non-blocking operation.
+    # Produce a message. This is an asynchronous operation.
     #
     # @param topic [String]
-    # @param message [#to_s]
+    # @param msg [#to_s]
     #
     # @example
     #   produce("greetings", "Hello there!")
-    def produce(topic, message)
-      @redis.rpushx("topics:#{topic}", message.to_s)
+    def produce(topic, msg)
+      Rafka.wrap_errors do
+        @redis.rpushx("topics:#{topic}", msg.to_s)
+      end
     end
 
     # Flush any buffered messages. Blocks until all messages are flushed or
@@ -36,14 +38,16 @@ module Rafka
     #
     # @return [Fixnum] The number of unflushed messages
     def flush(timeout_ms=5000)
-      @redis.dump(timeout_ms.to_s)
+      Rafka.wrap_errors do
+        @redis.dump(timeout_ms.to_s)
+      end
     end
 
     private
 
+    # @return [Hash]
     def parse_opts(opts)
-      options = DEFAULTS.dup.merge(opts).merge(opts[:redis_opts])
-      options
+      DEFAULTS.dup.merge(opts).merge(opts[:redis_opts])
     end
   end
 end

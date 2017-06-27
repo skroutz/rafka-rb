@@ -5,7 +5,7 @@ module Rafka
 
     def initialize(msg)
       if !msg.is_a?(Array) || msg.size != 8
-        raise MalformedMessage.new(msg)
+        raise MalformedMessageError.new(msg)
       end
 
       @topic     = msg[1]

@@ -14,5 +14,18 @@ module Rafka
     port: 6380,
     reconnect_attempts: 0,
   }
+
+  def self.wrap_errors
+    yield
+  rescue Redis::CommandError => e
+    case
+    when e.message.start_with?("PROD ")
+      raise ProduceError, e.message[5..-1]
+    when e.message.start_with?("CONS ")
+      raise ConsumeError, e.message[5..-1]
+    else
+      raise CommandError, e.message
+    end
+  end
 end
 

@@ -31,21 +31,24 @@ module Rafka
     #
     # @param timeout [Fixnum] the time in seconds to wait for a message
     #
-    # @raise [MalformedMessage] if the message from Rafka cannot be parsed
+    # @raise [MalformedMessageError] if the message cannot be parsed
     #
     # @return [nil, Message] the message, if any
     #
     # @example
     #   consume(5) { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
-      msg = @redis.blpop(@topic, timeout: timeout)
+      raised = false
+      msg = nil
+
+      Rafka.wrap_errors do
+        msg = @redis.blpop(@topic, timeout: timeout)
+      end
 
       return if !msg
 
-      msg = Message.new(msg)
-
       begin
-        raised = false
+        msg = Message.new(msg)
         yield(msg) if block_given?
       rescue => e
         raised = true
@@ -55,7 +58,9 @@ module Rafka
       msg
     ensure
       if msg && !raised
-        @redis.rpush("acks", "#{msg.topic}:#{msg.partition}:#{msg.offset}")
+        Rafka.wrap_errors do
+          @redis.rpush("acks", "#{msg.topic}:#{msg.partition}:#{msg.offset}")
+        end
       end
     end
 
