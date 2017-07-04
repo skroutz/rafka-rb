@@ -6,8 +6,10 @@ module Rafka
       @redis.ping
     end
 
+    # Closes the connection.
+    #
     # @see https://redis.io/commands/quit
-    def quit
+    def close
       @redis.quit
     end
   end
