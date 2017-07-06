@@ -1,5 +1,7 @@
 module Rafka
   class Producer
+    include GenericCommands
+
     # Access the underlying Redis client object
     attr_reader :redis
 
