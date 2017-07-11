@@ -17,13 +17,10 @@ module Rafka
     # @option opts [String] :topic Kafka topic to consume (required)
     # @option opts [String] :group Kafka consumer group name (required)
     # @option opts [String] :id (random) Kafka consumer id
-    # @option opts [Hash] :redis_opts ({}) Optional configuration for the
+    # @option opts [Hash] :redis ({}) Optional configuration for the
     #   underlying Redis client
     def initialize(opts={})
-      opts[:redis_opts] = {} if !opts[:redis_opts]
-      opts = parse_opts(opts)
-      client_id = "#{opts[:group]}:#{opts[:id]}"
-      @redis = Redis.new(host: opts[:host], port: opts[:port], id: client_id)
+      @redis = Redis.new(parse_opts(opts))
       @topic = "topics:#{opts[:topic]}"
     end
 
@@ -66,14 +63,18 @@ module Rafka
 
     private
 
+    # @return [Hash]
     def parse_opts(opts)
-      options = DEFAULTS.dup.merge(opts).merge(opts[:redis_opts])
-      options[:id] = SecureRandom.hex if !options[:id]
-
       REQUIRED.each do |opt|
-        raise "#{opt.inspect} option not provided" if !options[opt]
+        raise "#{opt.inspect} option not provided" if opts[opt].nil?
       end
 
+      rafka_opts = opts.reject { |k| k == :redis }
+      redis_opts = opts[:redis] || {}
+
+      options = DEFAULTS.dup.merge(rafka_opts).merge(redis_opts)
+      options[:id] = SecureRandom.hex if options[:id].nil?
+      options[:id] = "#{options[:group]}:#{options[:id]}"
       options
     end
   end

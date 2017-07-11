@@ -10,14 +10,12 @@ module Rafka
     # @param [Hash] opts
     # @option opts [String] :host ("localhost") server hostname
     # @option opts [Fixnum] :port (6380) server port
-    # @options opts [Hash] :redis_opts Configuration options for the underlying
+    # @options opts [Hash] :redis Configuration options for the underlying
     #   Redis client
     #
     # @return [Producer]
     def initialize(opts = {})
-      opts[:redis_opts] = {} if !opts[:redis_opts]
-      opts = parse_opts(opts)
-      @redis = Redis.new(host: opts[:host], port: opts[:port])
+      @redis = Redis.new(parse_opts(opts))
     end
 
     # Produce a message. This is an asynchronous operation.
@@ -49,7 +47,9 @@ module Rafka
 
     # @return [Hash]
     def parse_opts(opts)
-      DEFAULTS.dup.merge(opts).merge(opts[:redis_opts])
+      rafka_opts = opts.reject { |k| k == :redis }
+      redis_opts = opts[:redis] || {}
+      DEFAULTS.dup.merge(opts).merge(opts[:redis])
     end
   end
 end
