@@ -14,7 +14,7 @@ module Rafka
     #   Redis client
     #
     # @return [Producer]
-    def initialize(opts = {})
+    def initialize(opts={})
       @redis = Redis.new(parse_opts(opts))
     end
 
@@ -49,7 +49,7 @@ module Rafka
     def parse_opts(opts)
       rafka_opts = opts.reject { |k| k == :redis }
       redis_opts = opts[:redis] || {}
-      DEFAULTS.dup.merge(opts).merge(opts[:redis])
+      DEFAULTS.dup.merge(opts).merge(redis_opts)
     end
   end
 end
