@@ -21,14 +21,6 @@ module Rafka
     #   underlying Redis client
     def initialize(opts={})
       @redis = Redis.new(parse_opts(opts))
-
-      # in 3.2.2 and later this is done automatically
-      #
-      # @see https://github.com/redis/redis-rb/issues/510
-      if Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
-        @redis.client.call([:client, :setname, @redis.id])
-      end
-
       @topic = "topics:#{opts[:topic]}"
     end
 
@@ -43,6 +35,14 @@ module Rafka
     # @example
     #   consume(5) { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
+      # in 3.2.2 and later this is done automatically
+      #
+      # @see https://github.com/redis/redis-rb/issues/510
+      if !@connected && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
+        @redis.client.call([:client, :setname, @redis.id])
+        @connected = true
+      end
+
       raised = false
       msg = nil
 
