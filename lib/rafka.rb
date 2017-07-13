@@ -12,7 +12,7 @@ module Rafka
   DEFAULTS = {
     host: "localhost",
     port: 6380,
-    reconnect_attempts: 0,
+    reconnect_attempts: 5,
   }
 
   def self.wrap_errors
