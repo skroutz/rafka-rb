@@ -35,19 +35,41 @@ module Rafka
     # @example
     #   consume(5) { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
-      # in 3.2.2 and later this is done automatically
+      # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
+      # (https://github.com/redis/redis-rb/issues/510)
       #
-      # @see https://github.com/redis/redis-rb/issues/510
-      if !@connected && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
-        @redis.client.call([:client, :setname, @redis.id])
-        @connected = true
+      # TODO(agis): get rid of this when we drop support for 3.2.1 and before
+      if !@redis.client.connected? && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
+        Rafka.wrap_errors do
+          @redis.client.call([:client, :setname, @redis.id])
+        end
       end
 
       raised = false
       msg = nil
+      setname_attempts = 0
 
-      Rafka.wrap_errors do
-        msg = @redis.blpop(@topic, timeout: timeout)
+      begin
+        Rafka.wrap_errors do
+          Rafka.with_retry do
+            msg = @redis.blpop(@topic, timeout: timeout)
+          end
+        end
+      rescue ConsumeError => e
+        # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
+        # (https://github.com/redis/redis-rb/issues/510)
+        #
+        # this is in case the server restarts while we were performing a BLPOP
+        #
+        # TODO(agis): get rid of this when we drop support for 3.2.1 and before
+        if e.message =~ /Identify yourself/ && setname_attempts < 5
+          sleep 0.5
+          @redis.client.call([:client, :setname, @redis.id])
+          setname_attempts += 1
+          retry
+        end
+
+        raise e
       end
 
       return if !msg
