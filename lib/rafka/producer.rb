@@ -15,7 +15,8 @@ module Rafka
     #
     # @return [Producer]
     def initialize(opts={})
-      @redis = Redis.new(parse_opts(opts))
+      @options = parse_opts(opts)
+      @redis = Redis.new(@options)
     end
 
     # Produce a message. This is an asynchronous operation.
@@ -27,7 +28,9 @@ module Rafka
     #   produce("greetings", "Hello there!")
     def produce(topic, msg)
       Rafka.wrap_errors do
-        @redis.rpushx("topics:#{topic}", msg.to_s)
+        Rafka.with_retry(times: @options[:reconnect_attempts]) do
+          @redis.rpushx("topics:#{topic}", msg.to_s)
+        end
       end
     end
 
