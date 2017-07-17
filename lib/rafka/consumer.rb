@@ -20,7 +20,8 @@ module Rafka
     # @option opts [Hash] :redis ({}) Optional configuration for the
     #   underlying Redis client
     def initialize(opts={})
-      @redis = Redis.new(parse_opts(opts))
+      @options = parse_opts(opts)
+      @redis = Redis.new(@options)
       @topic = "topics:#{opts[:topic]}"
     end
 
@@ -51,7 +52,7 @@ module Rafka
 
       begin
         Rafka.wrap_errors do
-          Rafka.with_retry do
+          Rafka.with_retry(times: @options[:reconnect_attempts]) do
             msg = @redis.blpop(@topic, timeout: timeout)
           end
         end
