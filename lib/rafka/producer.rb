@@ -23,13 +23,20 @@ module Rafka
     #
     # @param topic [String]
     # @param msg [#to_s]
+    # @param key [#to_s] two or more messages with the same key will always be
+    #   assigned to the same partition.
     #
     # @example
     #   produce("greetings", "Hello there!")
-    def produce(topic, msg)
+    #
+    # @example
+    #   produce("greetings", "Hello there!", key: "hi")
+    def produce(topic, msg, key: nil)
       Rafka.wrap_errors do
         Rafka.with_retry(times: @options[:reconnect_attempts]) do
-          @redis.rpushx("topics:#{topic}", msg.to_s)
+          redis_key = "topics:#{topic}"
+          redis_key << ":#{key}" if key
+          @redis.rpushx(redis_key, msg.to_s)
         end
       end
     end

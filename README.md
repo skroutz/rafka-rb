@@ -51,7 +51,13 @@ Usage
 require "rafka"
 
 prod = Rafka::Producer.new(host: "localhost", port: 6380)
-prod.produce("greetings", "Hello there!") # produce to topic "greetings"
+
+# Produce to topic "greetings". The message will be assigned to a random partition.
+prod.produce("greetings", "Hello there!")
+
+# Produce using a key. Two or more messages with the same key will always be assigned to the same partition.
+prod.produce("greetings", "Hello there!", key: "hi")
+prod.produce("greetings", "Hi there!", key: "hi")
 ```
 
 
