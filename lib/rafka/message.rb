@@ -8,10 +8,16 @@ module Rafka
         raise MalformedMessageError.new(msg)
       end
 
-      @topic     = msg[1]
-      @partition = msg[3]
-      @offset    = msg[5]
-      @value     = msg[7]
+      @topic = msg[1]
+
+      begin
+        @partition = Integer(msg[3])
+        @offset = Integer(msg[5])
+      rescue ArgumentError
+        raise MalformedMessageError.new(msg)
+      end
+
+      @value = msg[7]
     end
   end
 end
