@@ -49,7 +49,7 @@ module Rafka
     # @return [Fixnum] The number of unflushed messages
     def flush(timeout_ms=5000)
       Rafka.wrap_errors do
-        @redis.dump(timeout_ms.to_s)
+        Integer(@redis.dump(timeout_ms.to_s))
       end
     end
 
