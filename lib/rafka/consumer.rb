@@ -25,15 +25,20 @@ module Rafka
       @topic = "topics:#{opts[:topic]}"
     end
 
-    # Fetch the next message.
+    # Fetches the next message. Offsets are commited automatically. In the
+    # block form, the offset is commited only if the given block haven't
+    # raised any exceptions.
     #
     # @param timeout [Fixnum] the time in seconds to wait for a message
     #
     # @raise [MalformedMessageError] if the message cannot be parsed
     #
-    # @return [nil, Message] the message, if any
+    # @return [nil, Message]
     #
-    # @example
+    # @example Consume a message
+    #   puts consume(5).value
+    #
+    # @example Consume and commit offset if the block runs successfully
     #   consume(5) { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
       # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
