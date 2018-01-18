@@ -3,7 +3,7 @@ rafka-rb: Ruby driver for Rafka
 [![Gem Version](https://badge.fury.io/rb/rafka.svg)](https://badge.fury.io/rb/rafka-rb)
 [![Documentation](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/github/skroutz/rafka-rb)
 
-Rafka is a thin Ruby client library for [Rafka](https://github.com/skroutz/rafka),
+rafka-rb is a thin Ruby client library for [Rafka](https://github.com/skroutz/rafka),
 providing a consumer and a producer with simple semantics. It is backed by
 [redis-rb](https://github.com/redis/redis-rb).
 
