@@ -9,13 +9,6 @@ providing a consumer and a producer with simple semantics. It is backed by
 
 View the [API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb).
 
-Status
--------------------------------------------------------------------------------
-
-Rafka is not yet stable and therefore is _not_ recommended for production use.
-
-
-
 
 
 
@@ -35,7 +28,6 @@ If you're using Bundler, add it to your Gemfile:
 gem "rafka"
 ```
 and run `bundle install`.
-
 
 
 
