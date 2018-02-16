@@ -1,3 +1,4 @@
+require "json"
 require "securerandom"
 
 module Rafka
@@ -14,6 +15,9 @@ module Rafka
     # @return [Redis::Client] the underlying Redis client instance
     attr_reader :redis
 
+    # @return [String] the argument passed to BLPOP
+    attr_reader :blpop_arg
+
     # Initialize a new consumer.
     #
     # @param [Hash] opts
@@ -24,8 +28,12 @@ module Rafka
     # @option opts [String] :id (random) Kafka consumer id
     # @option opts [Boolean] :auto_commit (true) automatically commit
     #   offsets
-    # @option opts [Hash] :redis ({}) Configuration for the
-    #   underlying Redis client (see {REDIS_DEFAULTS})
+    # @option opts [Hash] :librdkafka ({}) librdkafka configuration. It will
+    #   be merged over the existing configuration set in the server.
+    #   See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+    #   for more information
+    # @option opts [Hash] :redis ({}) Configuration for the underlying Redis
+    #   client. See {REDIS_DEFAULTS}
     #
     # @raise [RuntimeError] if a required option was not provided
     #   (see {REQUIRED_OPTS})
@@ -35,10 +43,12 @@ module Rafka
       opts[:id] ||= SecureRandom.hex
       opts[:id] = "#{opts[:group]}:#{opts[:id]}"
       opts[:auto_commit] = true if opts[:auto_commit].nil?
+      opts[:librdkafka] ||= {}
 
       @rafka_opts, @redis_opts = parse_opts(opts)
       @redis = Redis.new(@redis_opts)
-      @topic = "topics:#{@rafka_opts[:topic]}"
+      @blpop_arg = "topics:#{@rafka_opts[:topic]}"
+      @blpop_arg << ":#{opts[:librdkafka].to_json}" if !opts[:librdkafka].empty?
     end
 
     # Consumes the next message.
@@ -208,7 +218,7 @@ module Rafka
         raise "#{opt.inspect} option not provided" if opts[opt].nil?
       end
 
-      rafka_opts = opts.reject { |k| k == :redis }
+      rafka_opts = opts.reject { |k| k == :redis || k == :librdkafka }
 
       redis_opts = REDIS_DEFAULTS.dup.merge(opts[:redis] || {})
       redis_opts.merge!(
@@ -254,7 +264,7 @@ module Rafka
       begin
         Rafka.wrap_errors do
           Rafka.with_retry(times: @redis_opts[:reconnect_attempts]) do
-            msg = @redis.blpop(@topic, timeout: timeout)
+            msg = @redis.blpop(@blpop_arg, timeout: timeout)
           end
         end
       rescue ConsumeError => e
