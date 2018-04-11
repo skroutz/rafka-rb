@@ -1,2 +1,5 @@
 .byebug_history
+.yardoc
 *.gem
+
+doc/

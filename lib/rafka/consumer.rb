@@ -1,6 +1,11 @@
 require 'securerandom'
 
 module Rafka
+  # A Kafka consumer that consumes messages from a given Kafka topic
+  # and belongs to a specific consumer group. Offsets are commited
+  # automatically; see {#consume} for more info.
+  #
+  # @see https://kafka.apache.org/documentation/#consumerapi
   class Consumer
     include GenericCommands
 
@@ -9,7 +14,7 @@ module Rafka
     # The underlying Redis client object
     attr_reader :redis
 
-    # Create a new client instance.
+    # Create a new consumer.
     #
     # @param [Hash] opts
     # @option opts [String] :host ("localhost") server hostname
@@ -19,27 +24,33 @@ module Rafka
     # @option opts [String] :id (random) Kafka consumer id
     # @option opts [Hash] :redis ({}) Optional configuration for the
     #   underlying Redis client
+    #
+    # @return [Consumer]
     def initialize(opts={})
       @options = parse_opts(opts)
       @redis = Redis.new(@options)
       @topic = "topics:#{opts[:topic]}"
     end
 
-    # Fetches the next message. Offsets are commited automatically. In the
-    # block form, the offset is commited only if the given block haven't
-    # raised any exceptions.
+    # Consumes the next message and commit offsets automatically. In the
+    # block form, offsets are commited only if the block executes
+    # without raising any exceptions.
     #
-    # @param timeout [Fixnum] the time in seconds to wait for a message
+    # @param timeout [Fixnum] the time in seconds to wait for a message. If
+    #   reached, {#consume} returns nil.
+    #
+    # @yieldparam [Message] the consumed message
     #
     # @raise [MalformedMessageError] if the message cannot be parsed
     #
     # @return [nil, Message]
     #
     # @example Consume a message
-    #   puts consume(5).value
+    #   msg = consumer.consume #=> #<Rafka::Message:0x007fda00502850 @topic="greetings", @partition=1, @offset=10, @value="hi">
+    #   msg.value # => "hi"
     #
-    # @example Consume and commit offset if the block runs successfully
-    #   consume(5) { |msg| puts "I received #{msg.value}" }
+    # @example Consume a message and commit offset if the block does not raise an exception
+    #   consumer.consume { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
       # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
       # (https://github.com/redis/redis-rb/issues/510)

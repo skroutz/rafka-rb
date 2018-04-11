@@ -3,14 +3,23 @@ rafka-rb: Ruby driver for Rafka
 [![Gem Version](https://badge.fury.io/rb/rafka.svg)](https://badge.fury.io/rb/rafka-rb)
 [![Documentation](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/github/skroutz/rafka-rb)
 
-rafka-rb is a thin Ruby client library for [Rafka](https://github.com/skroutz/rafka),
-providing a consumer and a producer with simple semantics. It is backed by
-[redis-rb](https://github.com/redis/redis-rb).
+rafka-rb is a Ruby client for [Rafka](https://github.com/skroutz/rafka),
+providing consumer and producer implementations with simple semantics.
+It is backed by [redis-rb](https://github.com/redis/redis-rb).
 
-View the [API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb).
+Refer to the [API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb)
+for more information.
 
 
 
+Features
+-------------------------------------------------------------------------------
+
+- Consumer implementation
+  - consumer groups
+  - offsets are managed automatically
+- Producer implementation
+  - support for partition hashing key
 
 
 
@@ -40,32 +49,22 @@ Usage
 ### Producer
 
 ```ruby
-require "rafka"
-
-prod = Rafka::Producer.new(host: "localhost", port: 6380)
-
-# Produce to topic "greetings". The message will be assigned to a random partition.
-prod.produce("greetings", "Hello there!")
-
-# Produce using a key. Two or more messages with the same key will always be assigned to the same partition.
-prod.produce("greetings", "Hello there!", key: "hi")
-prod.produce("greetings", "Hi there!", key: "hi")
+producer = Rafka::Producer.new(host: "localhost", port: 6380)
+producer.produce("greetings", "Hello there!")
 ```
 
+See the [API documentation of `Producer`](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Producer) for more information.
 
 
 
 ### Consumer
 
 ```ruby
-require "rafka"
-
-cons = Rafka::Consumer.new(topic: "greetings", group: "myapp", id: "greeter1")
-cons.consume # => "Hello there!"
+consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp")
+consumer.consume.value # => "Hello there!"
 
 # with a block
-cons.consume { |msg| puts "Received: #{msg.value}" } # => "Hello there!"
+consumer.consume { |msg| puts "Received: #{msg.value}" } # => "Hello there!"
 ```
 
-`Rafka::Consumer#consume` automatically commits the offsets when the given block
-is executed without raising any exceptions.
+See the [API documentation of `Consumer`](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer) for more information.

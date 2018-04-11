@@ -1,16 +1,20 @@
 module Rafka
+  # A Kafka producer that can produce to different topics.
+  # See {#produce} for more info.
+  #
+  # @see https://kafka.apache.org/documentation/#producerapi
   class Producer
     include GenericCommands
 
     # Access the underlying Redis client object
     attr_reader :redis
 
-    # Create a new client instance.
+    # Create a new producer.
     #
     # @param [Hash] opts
     # @option opts [String] :host ("localhost") server hostname
     # @option opts [Fixnum] :port (6380) server port
-    # @options opts [Hash] :redis Configuration options for the underlying
+    # @option opts [Hash] :redis Configuration options for the underlying
     #   Redis client
     #
     # @return [Producer]
@@ -19,18 +23,21 @@ module Rafka
       @redis = Redis.new(@options)
     end
 
-    # Produce a message. This is an asynchronous operation.
+    # Produce a message to a topic. This is an asynchronous operation.
     #
     # @param topic [String]
-    # @param msg [#to_s]
-    # @param key [#to_s] two or more messages with the same key will always be
-    #   assigned to the same partition.
+    # @param msg [#to_s] the message
+    # @param key [#to_s] an optional partition hashing key. Two or more messages
+    #   with the same key will always be written to the same partition.
     #
-    # @example
-    #   produce("greetings", "Hello there!")
+    # @example Simple produce
+    #   producer = Rafka::Producer.new
+    #   producer.produce("greetings", "Hello there!")
     #
-    # @example
-    #   produce("greetings", "Hello there!", key: "hi")
+    # @example Produce two messages with a hashing key. Those messages are guaranteed to be written to the same partition
+    #     producer = Rafka::Producer.new
+    #     produce("greetings", "Aloha", key: "abc")
+    #     produce("greetings", "Hola", key: "abc")
     def produce(topic, msg, key: nil)
       Rafka.wrap_errors do
         Rafka.with_retry(times: @options[:reconnect_attempts]) do
@@ -41,10 +48,10 @@ module Rafka
       end
     end
 
-    # Flush any buffered messages. Blocks until all messages are flushed or
-    # timeout exceeds.
+    # Flush any buffered messages. Blocks until all messages are written or the
+    # given timeout exceeds.
     #
-    # @param timeout_ms [Fixnum] (5000) The timeout in milliseconds
+    # @param timeout_ms [Fixnum]
     #
     # @return [Fixnum] The number of unflushed messages
     def flush(timeout_ms=5000)
