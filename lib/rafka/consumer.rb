@@ -39,11 +39,11 @@ module Rafka
     # @param timeout [Fixnum] the time in seconds to wait for a message. If
     #   reached, {#consume} returns nil.
     #
-    # @yieldparam [Message] the consumed message
+    # @yieldparam [Message] msg the consumed message
     #
     # @raise [MalformedMessageError] if the message cannot be parsed
     #
-    # @return [nil, Message]
+    # @return [nil, Message] the consumed message, or nil of there wasn't any
     #
     # @example Consume a message
     #   msg = consumer.consume #=> #<Rafka::Message:0x007fda00502850 @topic="greetings", @partition=1, @offset=10, @value="hi">
