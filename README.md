@@ -68,3 +68,14 @@ consumer.consume { |msg| puts "Received: #{msg.value}" } # => "Hello there!"
 ```
 
 See the [API documentation of `Consumer`](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer) for more information.
+
+
+
+
+
+
+
+Testing
+-------------------------------------------------------------------------------
+
+rafka-rb is indirectly tested by [Rafka's end-to-end tests](https://github.com/skroutz/rafka/tree/master/test).
