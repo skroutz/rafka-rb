@@ -9,7 +9,7 @@ require "rafka/consumer"
 require "rafka/producer"
 
 module Rafka
-  DEFAULTS = {
+  REDIS_DEFAULTS = {
     host: "localhost",
     port: 6380,
     reconnect_attempts: 5,
@@ -34,7 +34,7 @@ module Rafka
   #
   # TODO(agis): get rid of this method when we go to 3.2.1 or later, because
   # https://github.com/redis/redis-rb/pull/476/
-  def self.with_retry(times: DEFAULTS[:reconnect_attempts], every_sec: 1)
+  def self.with_retry(times: REDIS_DEFAULTS[:reconnect_attempts], every_sec: 1)
     attempts = 0
 
     begin

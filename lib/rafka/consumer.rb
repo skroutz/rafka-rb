@@ -9,7 +9,7 @@ module Rafka
   class Consumer
     include GenericCommands
 
-    REQUIRED = [:group, :topic]
+    REQUIRED_OPTS = [:group, :topic]
 
     # The underlying Redis client object
     attr_reader :redis
@@ -25,11 +25,14 @@ module Rafka
     # @option opts [Hash] :redis ({}) Optional configuration for the
     #   underlying Redis client
     #
+    # @raise [RuntimeError] if a required option was not provided
+    #   (see {REQUIRED_OPTS})
+    #
     # @return [Consumer]
     def initialize(opts={})
-      @options = parse_opts(opts)
-      @redis = Redis.new(@options)
-      @topic = "topics:#{opts[:topic]}"
+      @rafka_opts, @redis_opts = parse_opts(opts)
+      @redis = Redis.new(@redis_opts)
+      @topic = "topics:#{@rafka_opts[:topic]}"
     end
 
     # Consumes the next message and commit offsets automatically. In the
@@ -68,7 +71,7 @@ module Rafka
 
       begin
         Rafka.wrap_errors do
-          Rafka.with_retry(times: @options[:reconnect_attempts]) do
+          Rafka.with_retry(times: @redis_opts[:reconnect_attempts]) do
             msg = @redis.blpop(@topic, timeout: timeout)
           end
         end
@@ -110,19 +113,24 @@ module Rafka
 
     private
 
-    # @return [Hash]
+    # @param [Hash] options hash as passed to {#initialize}
+    #
+    # @return [Array<Hash, Hash>] rafka opts, redis opts
     def parse_opts(opts)
-      REQUIRED.each do |opt|
+      REQUIRED_OPTS.each do |opt|
         raise "#{opt.inspect} option not provided" if opts[opt].nil?
       end
 
       rafka_opts = opts.reject { |k| k == :redis }
-      redis_opts = opts[:redis] || {}
+      rafka_opts[:id] ||= SecureRandom.hex
+      rafka_opts[:id] = "#{rafka_opts[:group]}:#{rafka_opts[:id]}"
 
-      options = DEFAULTS.dup.merge(rafka_opts).merge(redis_opts)
-      options[:id] = SecureRandom.hex if options[:id].nil?
-      options[:id] = "#{options[:group]}:#{options[:id]}"
-      options
+      redis_opts = REDIS_DEFAULTS.dup.merge(opts[:redis] || {})
+      redis_opts.merge!(
+        rafka_opts.select { |k| [:host, :port, :id].include?(k) }
+      )
+
+      return rafka_opts, redis_opts
     end
   end
 end
