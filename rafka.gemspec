@@ -16,6 +16,9 @@ Gem::Specification.new do |s|
   s.test_files  = Dir["test/**/*"]
 
   s.add_runtime_dependency "redis", "~> 3.0"
+
   s.add_development_dependency "pry-byebug"
   s.add_development_dependency "minitest"
+  s.add_development_dependency "yard"
+  s.add_development_dependency "rubocop"
 end

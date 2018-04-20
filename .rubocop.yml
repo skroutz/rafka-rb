@@ -1,0 +1,50 @@
+inherit_from: .rubocop_todo.yml
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/MultilineAssignmentLayout:
+  Enabled: true
+  EnforcedStyle: same_line
+
+#
+# Disabled Cops
+#
+Style/Documentation:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/ClassVars:
+  Enabled: false
+
+Style/SpaceAroundEqualsInParameterDefault:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Style/Next:
+  Enabled: false
