@@ -12,20 +12,15 @@ module Rafka
   REDIS_DEFAULTS = {
     host: "localhost",
     port: 6380,
-    reconnect_attempts: 5,
-  }
+    reconnect_attempts: 5
+  }.freeze
 
   def self.wrap_errors
     yield
   rescue Redis::CommandError => e
-    case
-    when e.message.start_with?("PROD ")
-      raise ProduceError, e.message[5..-1]
-    when e.message.start_with?("CONS ")
-      raise ConsumeError, e.message[5..-1]
-    else
-      raise CommandError, e.message
-    end
+    raise ProduceError, e.message[5..-1] if e.message.start_with?("PROD ")
+    raise ConsumeError, e.message[5..-1] if e.message.start_with?("CONS ")
+    raise CommandError, e.message
   end
 
   # redis-rb until 3.2.1 didn't retry to connect on
@@ -52,4 +47,3 @@ module Rafka
     end
   end
 end
-

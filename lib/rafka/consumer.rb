@@ -1,4 +1,4 @@
-require 'securerandom'
+require "securerandom"
 
 module Rafka
   # A Kafka consumer that consumes messages from a given Kafka topic
@@ -9,7 +9,7 @@ module Rafka
   class Consumer
     include GenericCommands
 
-    REQUIRED_OPTS = [:group, :topic]
+    REQUIRED_OPTS = [:group, :topic].freeze
 
     # @return [Redis::Client] the underlying Redis client instance
     attr_reader :redis
@@ -171,7 +171,7 @@ module Rafka
         rafka_opts.select { |k| [:host, :port, :id].include?(k) }
       )
 
-      return rafka_opts, redis_opts
+      [rafka_opts, redis_opts]
     end
 
     # Accepts one or more messages and prepare them for commit.

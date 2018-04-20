@@ -4,9 +4,6 @@ rescue LoadError
   puts "You must `gem install bundler` and `bundle install` to run rake tasks"
 end
 
-
-gemfile_name = File.basename(ENV["BUNDLE_GEMFILE"], ".gemfile")
-
 require "rake/testtask"
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"

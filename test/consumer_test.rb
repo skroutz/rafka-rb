@@ -20,21 +20,21 @@ class ConsumerTest < Minitest::Test
       ["topic", "bar", "partition", 4, "offset", 123, "value", "a"],
       ["topic", "bar", "partition", 4, "offset", 999, "value", "a"],
       ["topic", "bar", "partition", 3, "offset", 70, "value", "a"],
-      ["topic", "baz", "partition", 0, "offset", 999, "value", "a"],
+      ["topic", "baz", "partition", 0, "offset", 999, "value", "a"]
     ].map { |x| Rafka::Message.new(x) }
 
     expected = {
       "foo" => { 0 => 13, 1 => 4, 2 => 70 },
       "bar" => { 4 => 999, 3 => 70 },
-      "baz" => { 0 => 999 },
+      "baz" => { 0 => 999 }
     }
 
     actual = consumer.send(:prepare_for_commit, *msgs)
     assert_equal(actual, expected)
 
-    actual = consumer.send(:prepare_for_commit, Rafka::Message.new(
-      ["topic", "foo", "partition", 1, "offset", 1, "value", "a"]))
-    assert_equal(actual, { "foo" => { 1 => 1 } })
+    msg = Rafka::Message.new(["topic", "foo", "partition", 1, "offset", 1, "value", "a"])
+    actual = consumer.send(:prepare_for_commit, msg)
+    assert_equal(actual, "foo" => { 1 => 1 })
 
     assert_equal(consumer.send(:prepare_for_commit), {})
   end

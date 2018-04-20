@@ -114,8 +114,14 @@ for more information.
 
 
 
-Testing
+Development
 -------------------------------------------------------------------------------
+
+Running Rubocop:
+
+```shell
+$ bundle exec rake rubocop
+```
 
 Unit tests run as follows:
 
