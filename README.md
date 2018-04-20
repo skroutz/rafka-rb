@@ -12,14 +12,21 @@ for more information.
 
 
 
+
+
+
 Features
 -------------------------------------------------------------------------------
 
 - Consumer implementation
   - consumer groups
-  - offsets are managed automatically
+  - offsets may be managed automatically or manually
 - Producer implementation
   - support for partition hashing key
+
+
+
+
 
 
 
@@ -53,7 +60,16 @@ producer = Rafka::Producer.new(host: "localhost", port: 6380)
 producer.produce("greetings", "Hello there!")
 ```
 
-See the [API documentation of `Producer`](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Producer) for more information.
+Refer to the [Producer API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Producer)
+for more information.
+
+
+
+
+
+
+
+
 
 
 
@@ -61,13 +77,35 @@ See the [API documentation of `Producer`](http://www.rubydoc.info/github/skroutz
 
 ```ruby
 consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp")
-consumer.consume.value # => "Hello there!"
+msg = consumer.consume
+msg.value # => "Hello there!"
 
 # with a block
 consumer.consume { |msg| puts "Received: #{msg.value}" } # => "Hello there!"
 ```
 
-See the [API documentation of `Consumer`](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer) for more information.
+Offsets are managed automatically by default. If you need more control you can
+turn off the feature and manually commit offsets:
+
+```ruby
+consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp", auto_offset_commit: false)
+
+# commit a single offset
+msg = consumer.consume
+consumer.commit(msg) # => true
+
+# or commit a bunch of offsets
+msg1 = consumer.consume
+msg2 = consumer.consume
+consumer.commit(msg1, msg2) # => true
+```
+
+Refer to the [Consumer API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer)
+for more information.
+
+
+
+
 
 
 

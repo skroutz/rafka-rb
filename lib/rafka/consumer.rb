@@ -11,10 +11,10 @@ module Rafka
 
     REQUIRED_OPTS = [:group, :topic]
 
-    # The underlying Redis client object
+    # @return [Redis::Client] the underlying Redis client instance
     attr_reader :redis
 
-    # Create a new consumer.
+    # Initialize a new consumer.
     #
     # @param [Hash] opts
     # @option opts [String] :host ("localhost") server hostname
@@ -22,22 +22,33 @@ module Rafka
     # @option opts [String] :topic Kafka topic to consume (required)
     # @option opts [String] :group Kafka consumer group name (required)
     # @option opts [String] :id (random) Kafka consumer id
-    # @option opts [Hash] :redis ({}) Optional configuration for the
-    #   underlying Redis client
+    # @option opts [Boolean] :auto_commit (true) automatically commit
+    #   offsets
+    # @option opts [Hash] :redis ({}) Configuration for the
+    #   underlying Redis client (see {REDIS_DEFAULTS})
     #
     # @raise [RuntimeError] if a required option was not provided
     #   (see {REQUIRED_OPTS})
     #
     # @return [Consumer]
     def initialize(opts={})
+      opts[:id] ||= SecureRandom.hex
+      opts[:id] = "#{opts[:group]}:#{opts[:id]}"
+      opts[:auto_commit] = true if opts[:auto_commit].nil?
+
       @rafka_opts, @redis_opts = parse_opts(opts)
       @redis = Redis.new(@redis_opts)
       @topic = "topics:#{@rafka_opts[:topic]}"
     end
 
-    # Consumes the next message and commit offsets automatically. In the
-    # block form, offsets are commited only if the block executes
+    # Consumes the next message.
+    #
+    # If :auto_commit is true, offsets are commited automatically.
+    # In the block form, offsets are commited only if the block executes
     # without raising any exceptions.
+    #
+    # If :auto_commit is false, offsets have to be commited manually; see
+    # {#commit}.
     #
     # @param timeout [Fixnum] the time in seconds to wait for a message. If
     #   reached, {#consume} returns nil.
@@ -45,11 +56,12 @@ module Rafka
     # @yieldparam [Message] msg the consumed message
     #
     # @raise [MalformedMessageError] if the message cannot be parsed
+    # @raise [ConsumeError] if there was any error consuming a message
     #
     # @return [nil, Message] the consumed message, or nil of there wasn't any
     #
     # @example Consume a message
-    #   msg = consumer.consume #=> #<Rafka::Message:0x007fda00502850 @topic="greetings", @partition=1, @offset=10, @value="hi">
+    #   msg = consumer.consume
     #   msg.value # => "hi"
     #
     # @example Consume a message and commit offset if the block does not raise an exception
@@ -104,16 +116,47 @@ module Rafka
 
       msg
     ensure
-      if msg && !raised
+      if msg && !raised && @rafka_opts[:auto_commit]
         Rafka.wrap_errors do
           @redis.rpush("acks", "#{msg.topic}:#{msg.partition}:#{msg.offset}")
         end
       end
     end
 
+    # Commit offsets for the given messages.
+    #
+    # If more than one messages refer to the same topic/partition pair,
+    # only the largest offset amongst them is committed.
+    #
+    # @note This is non-blocking operation; a successful server reply means
+    #   offsets are received by the server and will _eventually_ be committed
+    #   to Kafka.
+    #
+    # @param msgs [Array<Message>] the messages for which to commit offsets
+    #
+    # @raise [ConsumeError] if there was any error commiting offsets
+    #
+    # @return [Hash] the actual offsets sent for commit
+    # @return [Hash{String=>Hash{Integer=>Integer}}] the actual offsets sent
+    #   for commit.Keys denote the topics while values contain the
+    #   partition=>offset pairs.
+    def commit(*msgs)
+      tp = prepare_for_commit(*msgs)
+
+      tp.each do |topic, po|
+        po.each do |partition, offset|
+          Rafka.wrap_errors do
+            @redis.rpush("acks", "#{topic}:#{partition}:#{offset}")
+          end
+        end
+      end
+
+      tp
+    end
+
     private
 
-    # @param [Hash] options hash as passed to {#initialize}
+    # @param opts [Hash] options hash as passed to {#initialize}
     #
     # @return [Array<Hash, Hash>] rafka opts, redis opts
     def parse_opts(opts)
@@ -122,8 +165,6 @@ module Rafka
       end
 
       rafka_opts = opts.reject { |k| k == :redis }
-      rafka_opts[:id] ||= SecureRandom.hex
-      rafka_opts[:id] = "#{rafka_opts[:group]}:#{rafka_opts[:id]}"
 
       redis_opts = REDIS_DEFAULTS.dup.merge(opts[:redis] || {})
       redis_opts.merge!(
@@ -131,6 +172,24 @@ module Rafka
       )
 
       return rafka_opts, redis_opts
+    end
+
+    # Accepts one or more messages and prepare them for commit.
+    #
+    # @param msgs [Array<Message>]
+    #
+    # @return [Hash{String=>Hash{Integer=>Integer}}] the offsets to be commited.
+    #   Keys denote the topics while values contain the partition=>offset pairs.
+    def prepare_for_commit(*msgs)
+      tp = Hash.new { |h, k| h[k] = Hash.new(0) }
+
+      msgs.each do |msg|
+        if msg.offset > tp[msg.topic][msg.partition]
+          tp[msg.topic][msg.partition] = msg.offset
+        end
+      end
+
+      tp
     end
   end
 end

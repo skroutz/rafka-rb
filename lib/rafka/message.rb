@@ -3,6 +3,14 @@ module Rafka
   class Message
     attr :topic, :partition, :offset, :value
 
+    # @param msg [Array] a message as received by the server
+    #
+    # @raise [MalformedMessageError] if message is malformed
+    #
+    # @example
+    #   Message.new(
+    #     ["topic", "greetings", "partition", 2, "offset", 321123, "value", "Hi!"]
+    #   )
     def initialize(msg)
       if !msg.is_a?(Array) || msg.size != 8
         raise MalformedMessageError.new(msg)
