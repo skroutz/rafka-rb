@@ -11,9 +11,9 @@ Gem::Specification.new do |s|
   s.summary     = "Ruby driver for Rafka"
   s.description = "A Ruby client library for Rafka, with consumer " \
     "and producer implementations."
-  s.license     = "MIT"
-  s.files = Dir["{lib,test}/**/*", "CHANGELOG.md", "LICENSE", "Rakefile", "README.md"]
-  s.test_files = Dir["test/**/*"]
+  s.license     = "GPL-3.0"
+  s.files       = Dir["{lib,test}/**/*", "CHANGELOG.md", "COPYING", "Rakefile", "README.md"]
+  s.test_files  = Dir["test/**/*"]
 
   s.add_runtime_dependency "redis", "~> 3.0"
   s.add_development_dependency "pry-byebug"

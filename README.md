@@ -78,4 +78,20 @@ See the [API documentation of `Consumer`](http://www.rubydoc.info/github/skroutz
 Testing
 -------------------------------------------------------------------------------
 
+Unit tests run as follows:
+
+```shell
+$ bundle exec rake test
+```
+
+
 rafka-rb is indirectly tested by [Rafka's end-to-end tests](https://github.com/skroutz/rafka/tree/master/test).
+
+
+
+
+
+
+License
+-------------------------------------------------------------------------------
+rafka-rb is released under the GNU General Public License version 3. See [COPYING](COPYING).
