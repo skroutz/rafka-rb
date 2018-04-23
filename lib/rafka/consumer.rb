@@ -2,8 +2,8 @@ require "securerandom"
 
 module Rafka
   # A Kafka consumer that consumes messages from a given Kafka topic
-  # and belongs to a specific consumer group. Offsets are commited
-  # automatically; see {#consume} for more info.
+  # and belongs to a specific consumer group. Offsets may be commited
+  # automatically or manually (see {#consume}).
   #
   # @see https://kafka.apache.org/documentation/#consumerapi
   class Consumer
@@ -47,7 +47,7 @@ module Rafka
     # In the block form, offsets are commited only if the block executes
     # without raising any exceptions.
     #
-    # If :auto_commit is false, offsets have to be commited manually; see
+    # If :auto_commit is false, offsets have to be commited manually using
     # {#commit}.
     #
     # @param timeout [Fixnum] the time in seconds to wait for a message. If
