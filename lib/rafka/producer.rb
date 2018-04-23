@@ -66,7 +66,7 @@ module Rafka
     def parse_opts(opts)
       rafka_opts = opts.reject { |k| k == :redis }
       redis_opts = opts[:redis] || {}
-      DEFAULTS.dup.merge(opts).merge(redis_opts)
+      REDIS_DEFAULTS.dup.merge(opts).merge(redis_opts).merge(rafka_opts)
     end
   end
 end
