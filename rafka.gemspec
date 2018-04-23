@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift(File.expand_path("../lib", __FILE__))
+$LOAD_PATH.unshift(File.expand_path("lib", __dir__))
 
 require "rafka/version"
 
@@ -17,8 +17,9 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "redis", "~> 3.0"
 
-  s.add_development_dependency "pry-byebug"
   s.add_development_dependency "minitest"
-  s.add_development_dependency "yard"
+  s.add_development_dependency "pry-byebug"
+  s.add_development_dependency "rake"
   s.add_development_dependency "rubocop"
+  s.add_development_dependency "yard"
 end
