@@ -1,12 +1,12 @@
-rafka-rb: Ruby driver for Rafka
+rafka-rb
 ===============================================================================
 [![Build Status](https://api.travis-ci.org/skroutz/rafka-rb.svg?branch=master)](https://travis-ci.org/skroutz/rafka-rb)
 [![Gem Version](https://badge.fury.io/rb/rafka.svg)](https://badge.fury.io/rb/rafka-rb)
 [![Documentation](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/github/skroutz/rafka-rb)
 
-rafka-rb is a Ruby client for [Rafka](https://github.com/skroutz/rafka),
-providing consumer and producer implementations with simple semantics.
-It is backed by [redis-rb](https://github.com/redis/redis-rb).
+rafka-rb is a Ruby client library for [Rafka](https://github.com/skroutz/rafka).
+
+It provides Consumer and Producer implementations with simple semantics.
 
 Refer to the [API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb)
 for more information.
