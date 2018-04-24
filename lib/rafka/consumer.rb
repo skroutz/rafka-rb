@@ -182,7 +182,7 @@ module Rafka
       tp = Hash.new { |h, k| h[k] = Hash.new(0) }
 
       msgs.each do |msg|
-        if msg.offset > tp[msg.topic][msg.partition]
+        if msg.offset >= tp[msg.topic][msg.partition]
           tp[msg.topic][msg.partition] = msg.offset
         end
       end

@@ -36,6 +36,10 @@ class ConsumerTest < Minitest::Test
     actual = consumer.send(:prepare_for_commit, msg)
     assert_equal(actual, "foo" => { 1 => 1 })
 
+    msg = Rafka::Message.new(["topic", "foo", "partition", 0, "offset", 0, "value", "a"])
+    actual = consumer.send(:prepare_for_commit, msg)
+    assert_equal(actual, "foo" => { 0 => 0 })
+
     assert_equal(consumer.send(:prepare_for_commit), {})
   end
 end
