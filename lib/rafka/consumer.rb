@@ -117,9 +117,7 @@ module Rafka
       msg
     ensure
       if msg && !raised && @rafka_opts[:auto_commit]
-        Rafka.wrap_errors do
-          @redis.rpush("acks", "#{msg.topic}:#{msg.partition}:#{msg.offset}")
-        end
+        commit(msg)
       end
     end
 
