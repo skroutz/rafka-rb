@@ -9,7 +9,7 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ### Fixed
 
-- SETNAME was incorrectly called more than once in batch mode [[3416d7](https://github.com/skroutz/rafka-rb/commit/3416d7bbd9f9e36b4e4d7f87f1e51ba2f559caf2))
+- SETNAME was incorrectly called more than once in batch mode [[3416d7](https://github.com/skroutz/rafka-rb/commit/3416d7bbd9f9e36b4e4d7f87f1e51ba2f559caf2)]
 
 ## 0.2.1 (2018-05-04)
 
