@@ -227,7 +227,7 @@ module Rafka
     #
     # TODO(agis): get rid of this when we drop support for 3.2.1 and before
     def set_name!
-      return if @redis.client.connected? && Gem::Version.new(Redis::VERSION) >= Gem::Version.new("3.2.2")
+      return if @redis.client.connected? || Gem::Version.new(Redis::VERSION) >= Gem::Version.new("3.2.2")
 
       Rafka.wrap_errors do
         @redis.client.call([:client, :setname, @redis.id])
