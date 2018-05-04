@@ -1,7 +1,7 @@
 rafka-rb
 ===============================================================================
 [![Build Status](https://api.travis-ci.org/skroutz/rafka-rb.svg?branch=master)](https://travis-ci.org/skroutz/rafka-rb)
-[![Gem Version](https://badge.fury.io/rb/rafka.svg)](https://badge.fury.io/rb/rafka-rb)
+[![Gem Version](https://badge.fury.io/rb/rafka.svg)](https://badge.fury.io/rb/rafka)
 [![Documentation](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/github/skroutz/rafka-rb)
 
 rafka-rb is a Ruby client library for [Rafka](https://github.com/skroutz/rafka).
