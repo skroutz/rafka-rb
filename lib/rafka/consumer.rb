@@ -67,7 +67,14 @@ module Rafka
     # @example Consume a message and commit offset if the block does not raise an exception
     #   consumer.consume { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
-      set_name!
+      # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
+      # (https://github.com/redis/redis-rb/issues/510)
+      #
+      # TODO(agis): get rid of this when we drop support for 3.2.1 and before
+      if !@redis.client.connected? && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
+        set_name!
+      end
+
       raised = false
       msg = consume_one(timeout)
 
@@ -222,13 +229,7 @@ module Rafka
       tp
     end
 
-    # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
-    # (https://github.com/redis/redis-rb/issues/510)
-    #
-    # TODO(agis): get rid of this when we drop support for 3.2.1 and before
     def set_name!
-      return if @redis.client.connected? || Gem::Version.new(Redis::VERSION) >= Gem::Version.new("3.2.2")
-
       Rafka.wrap_errors do
         @redis.client.call([:client, :setname, @redis.id])
       end
@@ -258,7 +259,7 @@ module Rafka
         # TODO(agis): get rid of this when we drop support for 3.2.1 and before
         if e.message =~ /Identify yourself/ && setname_attempts < 5
           sleep 0.5
-          @redis.client.call([:client, :setname, @redis.id])
+          set_name!
           setname_attempts += 1
           retry
         end
