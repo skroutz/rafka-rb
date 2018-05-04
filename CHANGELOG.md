@@ -4,6 +4,10 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+
+
+## 0.2.0 (2018-05-04)
+
 ### Added
 
 - Support for batch consuming [[#12](https://github.com/skroutz/rafka-rb/pull/12)]
