@@ -76,12 +76,12 @@ module Rafka
       end
 
       raised = false
-      msg = consume_one(timeout)
-
-      return nil if !msg
 
       begin
+        msg = consume_one(timeout)
         yield(msg) if block_given?
+
+        return nil if !msg
       rescue => e
         raised = true
         raise e
@@ -135,7 +135,14 @@ module Rafka
         raise ArgumentError, "one of batch_size or batching_max_sec must be greater than 0"
       end
 
-      set_name!
+      # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
+      # (https://github.com/redis/redis-rb/issues/510)
+      #
+      # TODO(agis): get rid of this when we drop support for 3.2.1 and before
+      if !@redis.client.connected? && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
+        set_name!
+      end
+
       raised = false
       start_time = Time.now
       msgs = []
