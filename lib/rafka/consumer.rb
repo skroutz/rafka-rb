@@ -1,9 +1,9 @@
 require "securerandom"
 
 module Rafka
-  # A Kafka consumer that consumes messages from a given Kafka topic
-  # and belongs to a specific consumer group. Offsets may be commited
-  # automatically or manually (see {#consume}).
+  # A Rafka-backed Kafka consumer that consumes messages from a specific topic
+  # and belongs to a specific consumer group. Offsets may be committed
+  # automatically or manually.
   #
   # @see https://kafka.apache.org/documentation/#consumerapi
   class Consumer
@@ -43,11 +43,11 @@ module Rafka
 
     # Consumes the next message.
     #
-    # If :auto_commit is true, offsets are commited automatically.
-    # In the block form, offsets are commited only if the block executes
+    # If :auto_commit is true, offsets are committed automatically.
+    # In the block form, offsets are committed only if the block executes
     # without raising any exceptions.
     #
-    # If :auto_commit is false, offsets have to be commited manually using
+    # If :auto_commit is false, offsets have to be committed manually using
     # {#commit}.
     #
     # @param timeout [Fixnum] the time in seconds to wait for a message. If
@@ -56,7 +56,7 @@ module Rafka
     # @yieldparam [Message] msg the consumed message
     #
     # @raise [MalformedMessageError] if the message cannot be parsed
-    # @raise [ConsumeError] if there was any error consuming a message
+    # @raise [ConsumeError] if there was a server error
     #
     # @return [nil, Message] the consumed message, or nil of there wasn't any
     #
@@ -67,47 +67,13 @@ module Rafka
     # @example Consume a message and commit offset if the block does not raise an exception
     #   consumer.consume { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
-      # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
-      # (https://github.com/redis/redis-rb/issues/510)
-      #
-      # TODO(agis): get rid of this when we drop support for 3.2.1 and before
-      if !@redis.client.connected? && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
-        Rafka.wrap_errors do
-          @redis.client.call([:client, :setname, @redis.id])
-        end
-      end
-
+      set_name!
       raised = false
-      msg = nil
-      setname_attempts = 0
+      msg = consume_one(timeout)
+
+      return nil if !msg
 
       begin
-        Rafka.wrap_errors do
-          Rafka.with_retry(times: @redis_opts[:reconnect_attempts]) do
-            msg = @redis.blpop(@topic, timeout: timeout)
-          end
-        end
-      rescue ConsumeError => e
-        # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
-        # (https://github.com/redis/redis-rb/issues/510)
-        #
-        # this is in case the server restarts while we were performing a BLPOP
-        #
-        # TODO(agis): get rid of this when we drop support for 3.2.1 and before
-        if e.message =~ /Identify yourself/ && setname_attempts < 5
-          sleep 0.5
-          @redis.client.call([:client, :setname, @redis.id])
-          setname_attempts += 1
-          retry
-        end
-
-        raise e
-      end
-
-      return if !msg
-
-      begin
-        msg = Message.new(msg)
         yield(msg) if block_given?
       rescue => e
         raised = true
@@ -116,9 +82,74 @@ module Rafka
 
       msg
     ensure
-      if msg && !raised && @rafka_opts[:auto_commit]
-        commit(msg)
+      commit(msg) if @rafka_opts[:auto_commit] && msg && !raised
+    end
+
+    # Consume a batch of messages.
+    #
+    # Messages are accumulated in a batch until (a) batch_size number of
+    # messages are accumulated or (b) batching_max_sec seconds have passed.
+    # When either of the conditions is met the batch is returned.
+    #
+    # If :auto_commit is true, offsets are committed automatically.
+    # In the block form, offsets are committed only if the block executes
+    # without raising any exceptions.
+    #
+    # If :auto_commit is false, offsets have to be committed manually using
+    # {#commit}.
+    #
+    # @note Either one of, or both batch_size and batching_max_sec may be
+    #   provided, but not neither.
+    #
+    # @param timeout [Fixnum] the time in seconds to wait for each message
+    # @param batch_size [Fixnum] maximum number of messages to accumulate
+    #   in the batch
+    # @param batching_max_sec [Fixnum] maximum time in seconds to wait for
+    #   messages to accumulate in the batch
+    #
+    # @yieldparam [Array<Message>] msgs the batch
+    #
+    # @raise [MalformedMessageError] if a message cannot be parsed
+    # @raise [ConsumeError] if there was a server error
+    # @raise [ArgumentError] if neither batch_size nor batching_max_sec were
+    #   provided
+    #
+    # @return [Array<Message>] the batch
+    #
+    # @example Consume a batch of 10 messages
+    #   msgs = consumer.consume_batch(batch_size: 10)
+    #   msgs.size # => 10
+    #
+    # @example Accumulate messages for 5 seconds and consume the batch
+    #   msgs = consumer.consume_batch(batching_max_sec: 5)
+    #   msgs.size # => 3813
+    def consume_batch(timeout: 1.0, batch_size: 0, batching_max_sec: 0)
+      if batch_size == 0 && batching_max_sec == 0
+        raise ArgumentError, "one of batch_size or batching_max_sec must be greater than 0"
       end
+
+      set_name!
+      raised = false
+      start_time = Time.now
+      msgs = []
+
+      loop do
+        break if batch_size > 0 && msgs.size >= batch_size
+        break if batching_max_sec > 0 && (Time.now - start_time >= batching_max_sec)
+        msg = consume_one(timeout)
+        msgs << msg if msg
+      end
+
+      begin
+        yield(msgs) if block_given?
+      rescue => e
+        raised = true
+        raise e
+      end
+
+      msgs
+    ensure
+      commit(*msgs) if @rafka_opts[:auto_commit] && !raised
     end
 
     # Commit offsets for the given messages.
@@ -127,17 +158,18 @@ module Rafka
     # only the largest offset amongst them is committed.
     #
     # @note This is non-blocking operation; a successful server reply means
-    #   offsets are received by the server and will _eventually_ be committed
-    #   to Kafka.
+    #   offsets are received by the server and will _eventually_ be submitted
+    #   to Kafka. It is not guaranteed that offsets will be actually committed
+    #   in case of failures.
     #
-    # @param msgs [Array<Message>] the messages for which to commit offsets
+    # @param msgs [Array<Message>] any number of messages for which to commit
+    #   offsets
     #
-    # @raise [ConsumeError] if there was any error commiting offsets
+    # @raise [ConsumeError] if there was a server error
     #
-    # @return [Hash] the actual offsets sent for commit
-    # @return [Hash{String=>Hash{Integer=>Integer}}] the actual offsets sent
-    #   for commit.Keys denote the topics while values contain the
-    #   partition=>offset pairs.
+    # @return [Hash{String=>Hash{Fixnum=>Fixnum}}] the actual offsets sent
+    #   to the server for commit. Keys contain topics while values contain
+    #   the respective partition/offset pairs.
     def commit(*msgs)
       tp = prepare_for_commit(*msgs)
 
@@ -176,7 +208,7 @@ module Rafka
     #
     # @param msgs [Array<Message>]
     #
-    # @return [Hash{String=>Hash{Integer=>Integer}}] the offsets to be commited.
+    # @return [Hash{String=>Hash{Fixnum=>Fixnum}}] the offsets to be committed.
     #   Keys denote the topics while values contain the partition=>offset pairs.
     def prepare_for_commit(*msgs)
       tp = Hash.new { |h, k| h[k] = Hash.new(0) }
@@ -188,6 +220,54 @@ module Rafka
       end
 
       tp
+    end
+
+    # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
+    # (https://github.com/redis/redis-rb/issues/510)
+    #
+    # TODO(agis): get rid of this when we drop support for 3.2.1 and before
+    def set_name!
+      return if @redis.client.connected? && Gem::Version.new(Redis::VERSION) >= Gem::Version.new("3.2.2")
+
+      Rafka.wrap_errors do
+        @redis.client.call([:client, :setname, @redis.id])
+      end
+    end
+
+    # @param timeout [Fixnum]
+    #
+    # @raise [MalformedMessageError]
+    #
+    # @return [nil, Message]
+    def consume_one(timeout)
+      msg = nil
+      setname_attempts = 0
+
+      begin
+        Rafka.wrap_errors do
+          Rafka.with_retry(times: @redis_opts[:reconnect_attempts]) do
+            msg = @redis.blpop(@topic, timeout: timeout)
+          end
+        end
+      rescue ConsumeError => e
+        # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
+        # (https://github.com/redis/redis-rb/issues/510)
+        #
+        # this is in case the server restarts while we were performing a BLPOP
+        #
+        # TODO(agis): get rid of this when we drop support for 3.2.1 and before
+        if e.message =~ /Identify yourself/ && setname_attempts < 5
+          sleep 0.5
+          @redis.client.call([:client, :setname, @redis.id])
+          setname_attempts += 1
+          retry
+        end
+
+        raise e
+      end
+
+      msg = Message.new(msg) if msg
+      msg
     end
   end
 end

@@ -21,6 +21,7 @@ Features
 
 - Consumer implementation
   - consumer groups
+  - support for consuming in batches
   - offsets may be managed automatically or manually
 - Producer implementation
   - support for partition hashing key
