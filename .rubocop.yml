@@ -10,6 +10,8 @@ Layout/MultilineAssignmentLayout:
 #
 # Disabled Cops
 #
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
 Metrics/ClassLength:
   Enabled: false
 Style/NumericPredicate:
