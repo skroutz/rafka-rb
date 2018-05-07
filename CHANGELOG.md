@@ -4,6 +4,11 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+## 0.2.3 (2018-05-07)
+
+### Fixed
+
+- `Consumer#consume` could yield a nil message to the block it received [[0ded948](https://github.com/skroutz/rafka-rb/commit/0ded94821b21d590a6cdf1314f85da56b48a9c40)]
 
 ## 0.2.2 (2018-05-04)
 
