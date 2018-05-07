@@ -46,7 +46,7 @@ class ConsumerTest < Minitest::Test
   def test_consume_block_no_message
     cons = Rafka::Consumer.new(group: "foo", topic: "bar")
 
-    def cons.consume_one(t)
+    def cons.consume_one(_)
       nil
     end
 
