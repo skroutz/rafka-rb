@@ -42,4 +42,16 @@ class ConsumerTest < Minitest::Test
 
     assert_equal(consumer.send(:prepare_for_commit), {})
   end
+
+  def test_consume_block_no_message
+    cons = Rafka::Consumer.new(group: "foo", topic: "bar")
+
+    def cons.consume_one(t)
+      nil
+    end
+
+    cons.consume do |msg|
+      assert_kind_of Rafka::Message, msg
+    end
+  end
 end

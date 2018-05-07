@@ -76,12 +76,12 @@ module Rafka
       end
 
       raised = false
+      msg = consume_one(timeout)
+
+      return nil if !msg
 
       begin
-        msg = consume_one(timeout)
         yield(msg) if block_given?
-
-        return nil if !msg
       rescue => e
         raised = true
         raise e
