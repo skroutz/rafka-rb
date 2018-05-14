@@ -5,6 +5,11 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 ## master (unreleased)
 
 
+## 0.2.5 (2018-05-15)
+
+### Changed
+
+- Depend on redis-rb 3.x
 
 
 ## 0.2.4 (2018-05-14)
