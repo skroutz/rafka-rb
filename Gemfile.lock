@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rafka (0.2.3)
-      redis (~> 3.0)
+      redis
 
 GEM
   remote: https://rubygems.org/
@@ -24,7 +24,7 @@ GEM
       pry (~> 0.10)
     rainbow (3.0.0)
     rake (12.1.0)
-    redis (3.3.5)
+    redis (4.0.1)
     rubocop (0.55.0)
       parallel (~> 1.10)
       parser (>= 2.5)
