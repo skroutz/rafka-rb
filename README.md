@@ -102,6 +102,14 @@ msg2 = consumer.consume
 consumer.commit(msg1, msg2) # => true
 ```
 
+Consumers may also set their own custom [librdkafka configuration](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md):
+
+```ruby
+consumer = Rafka::Consumer.new(
+  topic: "greetings", group: "myapp", librdkafka: { "auto.offset.reset" => "earliest" }
+)
+```
+
 Refer to the [Consumer API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer)
 for more information.
 

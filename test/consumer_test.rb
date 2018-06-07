@@ -54,4 +54,17 @@ class ConsumerTest < Minitest::Test
       assert_kind_of Rafka::Message, msg
     end
   end
+
+  def test_blpop_arg
+    cons = Rafka::Consumer.new(
+      group: "foo", topic: "bar", librdkafka: { test1: 2, test2: "a", "foo.bar" => true }
+    )
+    assert_equal cons.blpop_arg, 'topics:bar:{"test1":2,"test2":"a","foo.bar":true}'
+
+    cons = Rafka::Consumer.new(group: "foo", topic: "bar", librdkafka: {})
+    assert_equal cons.blpop_arg, "topics:bar"
+
+    cons = Rafka::Consumer.new(group: "foo", topic: "bar")
+    assert_equal cons.blpop_arg, "topics:bar"
+  end
 end

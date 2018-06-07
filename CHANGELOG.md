@@ -4,6 +4,15 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+### Added
+
+- Consumers can now set their own librdkafka configuration [[#8](https://github.com/skroutz/rafka-rb/pull/8)]
+
+
+
+
+
+
 
 ## 0.2.5 (2018-05-15)
 
