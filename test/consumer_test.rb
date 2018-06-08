@@ -64,6 +64,9 @@ class ConsumerTest < Minitest::Test
     cons = Rafka::Consumer.new(group: "foo", topic: "bar", librdkafka: {})
     assert_equal cons.blpop_arg, "topics:bar"
 
+    cons = Rafka::Consumer.new(group: "foo", topic: "bar", librdkafka: nil)
+    assert_equal cons.blpop_arg, "topics:bar"
+
     cons = Rafka::Consumer.new(group: "foo", topic: "bar")
     assert_equal cons.blpop_arg, "topics:bar"
   end
