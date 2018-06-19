@@ -2,6 +2,9 @@ language: ruby
 rvm:
 - 2.3
 - 2.4
+branches:
+  only:
+    - master
 notifications:
   slack:
     secure: cIfc5Wt4sh0xnPC/3GPnsnKajMOJjOKasKMVJeqcqAu+bASKtl9KdWgurPqr/LoMfTxFECfv1AJXE93ddaxcc2clMiW0gD+6S63R/Vx1092huJq+iPsV75YYXFYY2+0/KlXqRZx54tZT73pEjbJ7tU2/geU7ODDCd8F0zlob56CIrAua6YdLh65kEr7eZAxo0vZf70+4MkY/WAu+cUks0cdZEpz8DwcNuq/hBCjVN7n7pVdjf0vi1aJl4sxoSSgwLv80UmsgUElpXyt9O9ZnZWv76IidfnRqiyj+2snuuJepe7QcLTIBqsBuMFjcWWPlVkzf5XWsjneNhOEZFu85raSb9ZEHwMacLvuKrxMGbQjhqxR++Jp4rz3UwG3k/YVuU1YqH/jFTtMVNfenrSt38qyGEAMUhXqExOi6p+eJpwuxN4IRUnGeTjRANg3HmAHVhtTLLmmvWp/AwrqPSMPvACwSEOvKlS4rQWMMJnlyjCRFcwCBa1VyF55d6SatvniO7ADJ5V/RsRCD6GPti0kfCKca+fCfJm0ITq8rc8CH/ni9Lb3kQIouor8IFmbXIBNug8gm+KqRvK50T2YKQBoa9kP/28k5E3QMQCTlxCqNkYXV7indNuZIboZJw4I47YX8MAzJob38kWepv4vSXeC0o3RfsU6wqqUPds3PeTq6CYM=
