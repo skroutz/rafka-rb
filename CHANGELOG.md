@@ -4,6 +4,13 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+
+
+
+
+
+## 0.4.0 (2018-09-04)
+
 ### Changed
 
 - [BREAKING] Depend on redis-rb 3.3.2 or later [[#15](https://github.com/skroutz/rafka-rb/pull/15)]
@@ -13,7 +20,6 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 
 
-## 0.3.0 (2018-06-07)
 
 ### Added
 

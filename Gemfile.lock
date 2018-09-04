@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rafka (0.3.0)
+    rafka (0.4.0)
       redis (~> 3, >= 3.3.2)
 
 GEM
