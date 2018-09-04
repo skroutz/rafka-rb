@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rafka (0.3.0)
-      redis (~> 3)
+      redis (~> 3, >= 3.3.2)
 
 GEM
   remote: https://rubygems.org/
@@ -48,4 +48,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   1.13.6
+   1.16.4

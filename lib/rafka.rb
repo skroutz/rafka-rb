@@ -11,8 +11,7 @@ require "rafka/producer"
 module Rafka
   REDIS_DEFAULTS = {
     host: "localhost",
-    port: 6380,
-    reconnect_attempts: 5
+    port: 6380
   }.freeze
 
   def self.wrap_errors
@@ -21,29 +20,5 @@ module Rafka
     raise ProduceError, e.message[5..-1] if e.message.start_with?("PROD ")
     raise ConsumeError, e.message[5..-1] if e.message.start_with?("CONS ")
     raise CommandError, e.message
-  end
-
-  # redis-rb until 3.2.1 didn't retry to connect on
-  # Redis::CannotConnectError (eg. when rafka is down) so we manually retry
-  # 5 times
-  #
-  # TODO(agis): get rid of this method when we go to 3.2.1 or later, because
-  # https://github.com/redis/redis-rb/pull/476/
-  def self.with_retry(times: REDIS_DEFAULTS[:reconnect_attempts], every_sec: 1)
-    attempts = 0
-
-    begin
-      yield
-    rescue Redis::CannotConnectError => e
-      if Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
-        if attempts < times
-          attempts += 1
-          sleep every_sec
-          retry
-        end
-      end
-
-      raise e
-    end
   end
 end
