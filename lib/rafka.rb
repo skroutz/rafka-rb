@@ -11,8 +11,7 @@ require "rafka/producer"
 module Rafka
   REDIS_DEFAULTS = {
     host: "localhost",
-    port: 6380,
-    reconnect_attempts: 5
+    port: 6380
   }.freeze
 
   def self.wrap_errors
