@@ -40,11 +40,9 @@ module Rafka
     #     produce("greetings", "Hola", key: "abc")
     def produce(topic, msg, key: nil)
       Rafka.wrap_errors do
-        Rafka.with_retry(times: @options[:reconnect_attempts]) do
-          redis_key = "topics:#{topic}"
-          redis_key << ":#{key}" if key
-          @redis.rpushx(redis_key, msg.to_s)
-        end
+        redis_key = "topics:#{topic}"
+        redis_key << ":#{key}" if key
+        @redis.rpushx(redis_key, msg.to_s)
       end
     end
 

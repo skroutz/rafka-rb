@@ -263,9 +263,7 @@ module Rafka
 
       begin
         Rafka.wrap_errors do
-          Rafka.with_retry(times: @redis_opts[:reconnect_attempts]) do
-            msg = @redis.blpop(@blpop_arg, timeout: timeout)
-          end
+          msg = @redis.blpop(@blpop_arg, timeout: timeout)
         end
       rescue ConsumeError => e
         # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
