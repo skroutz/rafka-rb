@@ -19,7 +19,7 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 
 
-
+## 0.3.0 (2018-06-07)
 
 ### Added
 
