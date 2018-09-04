@@ -4,6 +4,10 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+### Changed
+
+- [BREAKING] Depend on redis-rb 3.3.2 or later [[#15](https://github.com/skroutz/rafka-rb/pull/15)]
+- [BREAKING] `reconnect_attempts` option now defaults to `1` (ie. no reconnects) [[#15](https://github.com/skroutz/rafka-rb/pull/15)]
 
 
 
