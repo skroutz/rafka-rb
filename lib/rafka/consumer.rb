@@ -77,14 +77,6 @@ module Rafka
     # @example Consume a message and commit offset if the block does not raise an exception
     #   consumer.consume { |msg| puts "I received #{msg.value}" }
     def consume(timeout=5)
-      # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
-      # (https://github.com/redis/redis-rb/issues/510)
-      #
-      # TODO(agis): get rid of this when we drop support for 3.2.1 and before
-      if !@redis.client.connected? && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
-        set_name!
-      end
-
       raised = false
       msg = consume_one(timeout)
 
@@ -143,14 +135,6 @@ module Rafka
     def consume_batch(timeout: 1.0, batch_size: 0, batching_max_sec: 0)
       if batch_size == 0 && batching_max_sec == 0
         raise ArgumentError, "one of batch_size or batching_max_sec must be greater than 0"
-      end
-
-      # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
-      # (https://github.com/redis/redis-rb/issues/510)
-      #
-      # TODO(agis): get rid of this when we drop support for 3.2.1 and before
-      if !@redis.client.connected? && Gem::Version.new(Redis::VERSION) < Gem::Version.new("3.2.2")
-        set_name!
       end
 
       raised = false
@@ -246,12 +230,6 @@ module Rafka
       tp
     end
 
-    def set_name!
-      Rafka.wrap_errors do
-        @redis.client.call([:client, :setname, @redis.id])
-      end
-    end
-
     # @param timeout [Fixnum]
     #
     # @raise [MalformedMessageError]
@@ -259,27 +237,9 @@ module Rafka
     # @return [nil, Message]
     def consume_one(timeout)
       msg = nil
-      setname_attempts = 0
 
-      begin
-        Rafka.wrap_errors do
-          msg = @redis.blpop(@blpop_arg, timeout: timeout)
-        end
-      rescue ConsumeError => e
-        # redis-rb didn't automatically call `CLIENT SETNAME` until v3.2.2
-        # (https://github.com/redis/redis-rb/issues/510)
-        #
-        # this is in case the server restarts while we were performing a BLPOP
-        #
-        # TODO(agis): get rid of this when we drop support for 3.2.1 and before
-        if e.message =~ /Identify yourself/ && setname_attempts < 5
-          sleep 0.5
-          set_name!
-          setname_attempts += 1
-          retry
-        end
-
-        raise e
+      Rafka.wrap_errors do
+        msg = @redis.blpop(@blpop_arg, timeout: timeout)
       end
 
       msg = Message.new(msg) if msg
