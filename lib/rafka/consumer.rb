@@ -10,7 +10,7 @@ module Rafka
   class Consumer
     include GenericCommands
 
-    REQUIRED_OPTS = [:group, :topics].freeze
+    REQUIRED_OPTS = [:group, :topic].freeze
 
     # @return [Redis::Client] the underlying Redis client instance
     attr_reader :redis
@@ -23,7 +23,7 @@ module Rafka
     # @param [Hash] opts
     # @option opts [String] :host ("localhost") server hostname
     # @option opts [Fixnum] :port (6380) server port
-    # @option opts [Array<String>|String] :topics Kafka topics to consume (required)
+    # @option opts [Array<String>|String] :topic Kafka topics to consume (required)
     # @option opts [String] :group Kafka consumer group name (required)
     # @option opts [String] :id (random) Kafka consumer id
     # @option opts [Boolean] :auto_commit (true) automatically commit
@@ -47,7 +47,7 @@ module Rafka
 
       @rafka_opts, @redis_opts = parse_opts(opts)
       @redis = Redis.new(@redis_opts)
-      @blpop_arg = "topics:#{@rafka_opts[:topics]}"
+      @blpop_arg = "topics:#{@rafka_opts[:topic]}"
       @blpop_arg << ":#{opts[:librdkafka].to_json}" if !opts[:librdkafka].empty?
     end
 
@@ -206,8 +206,8 @@ module Rafka
 
       # Support array of strings but make sure you turn this into a
       # comma-separated string of topics if that's the case.
-      if rafka_opts[:topics].is_a? Array
-        rafka_opts[:topics] = rafka_opts[:topics].join(",")
+      if rafka_opts[:topic].is_a? Array
+        rafka_opts[:topic] = rafka_opts[:topic].join(",")
       end
 
       redis_opts = REDIS_DEFAULTS.dup.merge(opts[:redis] || {})
