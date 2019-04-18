@@ -76,7 +76,7 @@ for more information.
 ### Consumer
 
 ```ruby
-consumer = Rafka::Consumer.new(topics: "greetings", group: "myapp")
+consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp")
 msg = consumer.consume
 msg.value # => "Hello there!"
 
@@ -88,7 +88,7 @@ Offsets are managed automatically by default. If you need more control you can
 turn off the feature and manually commit offsets:
 
 ```ruby
-consumer = Rafka::Consumer.new(topics: "greetings", group: "myapp", auto_offset_commit: false)
+consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp", auto_offset_commit: false)
 
 # commit a single offset
 msg = consumer.consume
@@ -111,9 +111,9 @@ consumer = Rafka::Consumer.new(
 Consumers can subscribe to multiple topics:
 
 ```ruby
-consumer = Rafka::Consumer.new(topics: "topic_1")
-consumer = Rafka::Consumer.new(topics: ["topic_1", "topic_2"])
-consumer = Rafka::Consumer.new(topics: "topic_1,topic_2")
+consumer = Rafka::Consumer.new(topic: "topic_1")
+consumer = Rafka::Consumer.new(topic: ["topic_1", "topic_2"])
+consumer = Rafka::Consumer.new(topic: "topic_1,topic_2")
 ```
 
 Refer to the [Consumer API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer)
