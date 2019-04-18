@@ -3,7 +3,7 @@ require "rafka"
 
 class ConsumerTest < Minitest::Test
   def test_prepare_for_commit
-    consumer = Rafka::Consumer.new(group: "foo", topic: "bar")
+    consumer = Rafka::Consumer.new(group: "foo", topics: "bar")
 
     msgs = [
       ["topic", "foo", "partition", 0, "offset", 1, "value", "a"],
@@ -44,7 +44,7 @@ class ConsumerTest < Minitest::Test
   end
 
   def test_consume_block_no_message
-    cons = Rafka::Consumer.new(group: "foo", topic: "bar")
+    cons = Rafka::Consumer.new(group: "foo", topics: "bar")
 
     def cons.consume_one(_)
       nil
@@ -57,17 +57,17 @@ class ConsumerTest < Minitest::Test
 
   def test_blpop_arg
     cons = Rafka::Consumer.new(
-      group: "foo", topic: "bar", librdkafka: { test1: 2, test2: "a", "foo.bar" => true }
+      group: "foo", topics: "bar", librdkafka: { test1: 2, test2: "a", "foo.bar" => true }
     )
     assert_equal cons.blpop_arg, 'topics:bar:{"test1":2,"test2":"a","foo.bar":true}'
 
-    cons = Rafka::Consumer.new(group: "foo", topic: "bar", librdkafka: {})
+    cons = Rafka::Consumer.new(group: "foo", topics: "bar", librdkafka: {})
     assert_equal cons.blpop_arg, "topics:bar"
 
-    cons = Rafka::Consumer.new(group: "foo", topic: "bar", librdkafka: nil)
+    cons = Rafka::Consumer.new(group: "foo", topics: "bar", librdkafka: nil)
     assert_equal cons.blpop_arg, "topics:bar"
 
-    cons = Rafka::Consumer.new(group: "foo", topic: "bar")
+    cons = Rafka::Consumer.new(group: "foo", topics: "bar")
     assert_equal cons.blpop_arg, "topics:bar"
   end
 end
