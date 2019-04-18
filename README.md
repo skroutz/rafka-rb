@@ -104,7 +104,7 @@ Consumers may also set their own custom [librdkafka configuration](https://githu
 
 ```ruby
 consumer = Rafka::Consumer.new(
-  topics: "greetings", group: "myapp", librdkafka: { "auto.offset.reset" => "earliest" }
+  topic: "greetings", group: "myapp", librdkafka: { "auto.offset.reset" => "earliest" }
 )
 ```
 
