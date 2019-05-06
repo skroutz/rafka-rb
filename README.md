@@ -88,7 +88,7 @@ Offsets are managed automatically by default. If you need more control you can
 turn off the feature and manually commit offsets:
 
 ```ruby
-consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp", auto_offset_commit: false)
+consumer = Rafka::Consumer.new(topic: "greetings", group: "myapp", auto_commit: false)
 
 # commit a single offset
 msg = consumer.consume
