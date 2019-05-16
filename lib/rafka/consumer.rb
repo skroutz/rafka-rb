@@ -46,7 +46,12 @@ module Rafka
       opts[:librdkafka] ||= {}
 
       @rafka_opts, @redis_opts = parse_opts(opts)
+
+      # NOTE: We disable connection-level timeout since it conflicts with
+      # BLPOP timeout and our rafka consumer flow.
+      @redis_opts.merge!(timeout: 0)
       @redis = Redis.new(@redis_opts)
+
       @blpop_arg = "topics:#{@rafka_opts[:topic]}"
       @blpop_arg << ":#{opts[:librdkafka].to_json}" if !opts[:librdkafka].empty?
     end
@@ -239,7 +244,18 @@ module Rafka
       msg = nil
 
       Rafka.wrap_errors do
-        msg = @redis.blpop(@blpop_arg, timeout: timeout)
+        # We don't use Redis#blpop because it ends up calling
+        # Redis::Client#call_with_timeout, which automatically retries the
+        # command upon ConnectionError. This is unwanted in rafka, since if
+        # we get a ConnectionError (i.e. the server is shutting down) we want
+        # to immediately enter the backoff retry mechanism.
+        #
+        # If we instead immediately retried the command, we could end up with
+        # "client id is already taken" errors by the server in case the
+        # underlying librdkafka consumer was not yet finalized.
+        msg = @redis.client.without_socket_timeout do
+          @redis.client.call([:blpop, [@blpop_arg], timeout])
+        end
       end
 
       msg = Message.new(msg) if msg

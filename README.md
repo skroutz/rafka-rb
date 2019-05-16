@@ -112,6 +112,12 @@ Refer to the [Consumer API documentation](http://www.rubydoc.info/github/skroutz
 for more information.
 
 
+#### Caveats
+
+- For consumers, we override `Redis::Client.timeout` to 0, since otherwise
+  it interacts weirdly with BLPOP's timeout, the reconnect mechanism and rafka.
+
+
 
 
 
