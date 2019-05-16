@@ -244,14 +244,15 @@ module Rafka
       msg = nil
 
       Rafka.wrap_errors do
-        # We don't use Redis#blpop because it ends up calling
+        # We don't use Redis#blpop directly because it ends up calling
         # Redis::Client#call_with_timeout, which automatically retries the
-        # command upon ConnectionError. This is unwanted in rafka, since if
-        # we get a ConnectionError (i.e. the server is shutting down) we want
-        # to immediately enter the backoff retry mechanism.
+        # command upon ConnectionError. This is unwanted in rafka, since when
+        # we get a ConnectionError (i.e. server is shutting down) we want
+        # to immediately enter the retry mechanism so that we reconnect
+        # to the server.
         #
         # If we instead immediately retried the command, we could end up with
-        # "client id is already taken" errors by the server in case the
+        # "client id is already taken" errors, in case the
         # underlying librdkafka consumer was not yet finalized.
         msg = @redis.client.without_socket_timeout do
           @redis.client.call([:blpop, [@blpop_arg], timeout])
