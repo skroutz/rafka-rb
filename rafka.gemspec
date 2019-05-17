@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.files       = Dir["{lib,test}/**/*", "CHANGELOG.md", "COPYING", "Rakefile", "README.md"]
   s.test_files  = Dir["test/**/*"]
 
-  s.add_runtime_dependency "redis", "~> 3", ">= 3.3.2"
+  s.add_runtime_dependency "redis", ">= 3.3.2"
 
   s.add_development_dependency "minitest"
   s.add_development_dependency "pry-byebug"
