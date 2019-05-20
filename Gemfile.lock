@@ -1,0 +1,51 @@
+PATH
+  remote: .
+  specs:
+    rafka (0.4.0)
+      redis (~> 3, >= 3.3.2)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.0)
+    byebug (9.1.0)
+    coderay (1.1.2)
+    method_source (0.9.0)
+    minitest (5.11.3)
+    parallel (1.12.1)
+    parser (2.5.1.0)
+      ast (~> 2.4.0)
+    powerpack (0.1.1)
+    pry (0.11.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
+    pry-byebug (3.5.0)
+      byebug (~> 9.1)
+      pry (~> 0.10)
+    rainbow (3.0.0)
+    rake (12.1.0)
+    redis (3.3.5)
+    rubocop (0.55.0)
+      parallel (~> 1.10)
+      parser (>= 2.5)
+      powerpack (~> 0.1)
+      rainbow (>= 2.2.2, < 4.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (~> 1.0, >= 1.0.1)
+    ruby-progressbar (1.9.0)
+    unicode-display_width (1.3.2)
+    yard (0.9.12)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  minitest
+  pry-byebug
+  rafka!
+  rake
+  rubocop
+  yard
+
+BUNDLED WITH
+   1.16.4
