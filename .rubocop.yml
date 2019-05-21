@@ -10,6 +10,14 @@ Layout/MultilineAssignmentLayout:
 #
 # Disabled Cops
 #
+Style/MultipleComparison:
+  Enabled: false
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
 Naming/UncommunicativeMethodParamName:
   Enabled: false
 Metrics/ClassLength:
