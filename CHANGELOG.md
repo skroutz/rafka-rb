@@ -4,6 +4,9 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+
+## 0.4.1 (2018-23-05)
+
 ### Changed
 
 - Relax redis-rb dependency to support v4.0.0 or later [[#21](https://github.com/skroutz/rafka-rb/pull/21)]
