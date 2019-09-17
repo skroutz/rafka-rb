@@ -46,8 +46,11 @@ module Rafka
       end
     end
 
-    # Flush any buffered messages. Blocks until all messages are written or the
-    # given timeout exceeds.
+    # Flush any outstanding messages. The server will block until all messages
+    # are written or the provided timeout exceeds. Note however, that the
+    # provided timeout may be overshot by the `read_timeout` setting of the
+    # underlying Redis client. This means that the client might interrupt the
+    # call earlier than timeout_ms, if `read_timeout` is less than `timeout_ms`.
     #
     # @param timeout_ms [Fixnum]
     #
