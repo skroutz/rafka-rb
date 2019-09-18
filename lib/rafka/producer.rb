@@ -47,12 +47,13 @@ module Rafka
     end
 
     # Flush any outstanding messages. The server will block until all messages
-    # are written or the provided timeout exceeds. Note however, that the
+    # are written or the provided timeout is exceeded. Note however, that the
     # provided timeout may be overshot by the `read_timeout` setting of the
     # underlying Redis client. This means that the client might interrupt the
     # call earlier than timeout_ms, if `read_timeout` is less than `timeout_ms`.
     #
-    # @param timeout_ms [Fixnum]
+    # @param timeout_ms [Fixnum]. Must be smaller than or equal to the underlying Redis client's `read_timeout`
+    #   which superseeds the current timeout.
     #
     # @return [Fixnum] The number of unflushed messages
     def flush(timeout_ms=5000)

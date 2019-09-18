@@ -61,7 +61,8 @@ module Rafka
     # {#commit}.
     #
     # @param timeout [Fixnum] the time in seconds to wait for a message. If
-    #   reached, {#consume} returns nil.
+    #   reached, {#consume} returns nil. Must be smaller than or equal to the underlying Redis client's
+    #   `read_timeout` which superseeds the current timeout.
     #
     # @yieldparam [Message] msg the consumed message
     #
