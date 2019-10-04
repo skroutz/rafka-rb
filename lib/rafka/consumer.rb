@@ -239,7 +239,9 @@ module Rafka
       msg = nil
 
       Rafka.wrap_errors do
-        msg = @redis.blpop(@blpop_arg, timeout: timeout)
+        Rafka.with_retry do
+          msg = @redis.blpop(@blpop_arg, timeout: timeout)
+        end
       end
 
       msg = Message.new(msg) if msg
