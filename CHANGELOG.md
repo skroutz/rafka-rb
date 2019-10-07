@@ -4,6 +4,11 @@ Breaking changes are prefixed with a "[BREAKING]" label.
 
 ## master (unreleased)
 
+## 0.5.0 (2019-10-09)
+
+## Changed
+
+- Consumer operations are now restarted upon `Rafka::ConsumeError: Server shutdown` exceptions (i.e. during server restarts) [[#27](https://github.com/skroutz/rafka-rb/pull/27)]
 
 ## 0.4.1 (2018-23-05)
 
