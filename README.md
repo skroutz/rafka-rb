@@ -108,6 +108,14 @@ consumer = Rafka::Consumer.new(
 )
 ```
 
+Consumers can subscribe to multiple topics:
+
+```ruby
+consumer = Rafka::Consumer.new(topic: "topic_1")
+consumer = Rafka::Consumer.new(topic: ["topic_1", "topic_2"])
+consumer = Rafka::Consumer.new(topic: "topic_1,topic_2")
+```
+
 Refer to the [Consumer API documentation](http://www.rubydoc.info/github/skroutz/rafka-rb/Rafka/Consumer)
 for more information.
 

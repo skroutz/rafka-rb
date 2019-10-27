@@ -70,4 +70,9 @@ class ConsumerTest < Minitest::Test
     cons = Rafka::Consumer.new(group: "foo", topic: "bar")
     assert_equal cons.blpop_arg, "topics:bar"
   end
+
+  def test_multiple_topics
+    cons = Rafka::Consumer.new(group: "foo", topic: %w[foo bar])
+    assert_equal cons.blpop_arg, "topics:foo,bar"
+  end
 end
